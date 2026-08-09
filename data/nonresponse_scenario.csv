@@ -1,0 +1,5 @@
+parameter,value
+population_size,50000
+invitation_sample_size,6000
+seed,20260812
+weighting_controls,age_band + region + education

@@ -1,0 +1,12 @@
+variable,description
+person_id,Synthetic person identifier
+age_band,Age category
+gender,Gender category
+region,UK region category
+education,Degree status
+digital_engagement_score,"Simulated digital engagement, 0-100"
+wellbeing_0_10,Simulated wellbeing score
+service_support_0_10,Primary survey outcome
+response_propensity,Modelled probability of response
+responded,Response indicator
+invited,Invitation-sample indicator
