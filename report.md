@@ -4,23 +4,23 @@
 
 | Project type | Dataset | Tools | Outputs |
 |---|---|---|---|
-| Simulated Quantitative Case Study | 50,000-Person Synthetic UK Adult Population | Python / Pandas / NumPy / Matplotlib | Response-Rate Tables · Composition Audit · Weighted Estimates · Diagnostics · Dark Figures |
+| Simulated Quantitative Case Study | 50,000-Person Synthetic UK Adult Population | Python / Pandas / NumPy / Matplotlib | Response-Rate Tables / Composition Audit / Weighted Estimates / Diagnostics / Dark Figures |
 
 **Skills demonstrated:** Sampling · Statistical Analysis · Data Validation · Data Weighting · Cross-tabulation
 
-## Study context
+## Study Context
 
 This simulated case study evaluates nonresponse in a hypothetical UK public-service survey. A known synthetic population makes the true outcome available, while 6,000 people are invited and response depends on demographic and behavioural characteristics. All values are synthetic and are not estimates of the real UK population.
 
-## Objective and method
+## Objective and Method
 
 The analysis measures subgroup response rates, compares respondent composition with the population, quantifies bias in mean service support, and applies iterative proportional fitting (raking) to age band, region and education margins. Weight trimming limits extreme weights to protect precision.
 
-## Response pattern
+## Response Pattern
 
 The invitation sample produced 1,201 respondents, an overall response rate of 20.0%. The lowest observed subgroup rate was 65-74 (11.0%) and the highest was 18-24 (25.2%). Because response propensity is also related to the survey outcome, the respondent mean is not representative without adjustment.
 
-## Bias assessment
+## Bias Assessment
 
 | Estimate | Mean service support | Bias versus population |
 |---|---:|---:|
@@ -48,7 +48,7 @@ The exercise separates three ideas that are often conflated: response rate, demo
 
 ![Estimate bias](figures/estimate_bias_before_after_weighting.png)
 
-## Project files
+## Project Files
 
 - [`data/nonresponse_population.csv.gz`](data/nonresponse_population.csv.gz) — compressed CSV containing the known synthetic population, invitation and response indicators.
 - [`data/nonresponse_codebook.csv`](data/nonresponse_codebook.csv) — variable definitions.
