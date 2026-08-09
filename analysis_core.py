@@ -204,7 +204,7 @@ def generate_report(population, respondents, estimates, response, composition, d
 
 | Project type | Dataset | Tools | Outputs |
 |---|---|---|---|
-| Simulated Quantitative Case Study | {len(population):,}-Person Synthetic UK Adult Population | Python / Pandas / NumPy / Matplotlib | Response-Rate Tables / Composition Audit / Weighted Estimates / Diagnostics / Dark Figures |
+| Simulated Quantitative Case Study | {len(population):,}-Person Synthetic UK Adult Population | Python / Pandas / NumPy / Matplotlib | Response-Rate Tables; Composition Audit; Weighted Estimates; Diagnostics; Dark Figures |
 
 **Skills demonstrated:** Sampling · Statistical Analysis · Data Validation · Data Weighting · Cross-tabulation
 
