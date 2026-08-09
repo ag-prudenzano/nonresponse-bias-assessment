@@ -4,7 +4,7 @@
 
 | Project type | Dataset | Tools | Outputs |
 |---|---|---|---|
-| Simulated Quantitative Case Study | 50,000-Person Synthetic UK Adult Population | Python / Pandas / NumPy / Matplotlib | Response-Rate Tables / Composition Audit / Weighted Estimates / Diagnostics / Dark Figures |
+| Simulated Quantitative Case Study | 50,000-Person Synthetic UK Adult Population | Python / Pandas / NumPy / Matplotlib | Response-Rate Tables; Composition Audit; Weighted Estimates; Diagnostics; Dark Figures |
 
 **Skills demonstrated:** Sampling · Statistical Analysis · Data Validation · Data Weighting · Cross-tabulation
 
