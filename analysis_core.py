@@ -16,7 +16,8 @@ POPULATION_SIZE, SAMPLE_SIZE, SEED = 50_000, 6_000, 20260812
 AGE_BANDS = ["18-24", "25-34", "35-44", "45-54", "55-64", "65-74"]
 REGIONS = ["London", "South", "Midlands", "North", "Scotland/Wales"]
 GENDERS = ["Woman", "Man", "Non-binary / other"]
-BG, TEXT, MUTED, LINE, BAR, ACCENT = "#0C0C0D", "#FFFFFF", "#A2A2A9", "#313135", "#5D5D65", "#FFFFFF"
+BG, TEXT, MUTED = "#000000", "#FFFFFF", "#B3B3B3"
+LINE, GRID, BAR, ACCENT = "#404040", "#333333", "#666666", "#FFFFFF"
 
 
 def run_git(*args):
@@ -163,29 +164,29 @@ def style(ax, axis):
     ax.figure.patch.set_facecolor(BG); ax.set_facecolor(BG); ax.tick_params(colors=MUTED, labelsize=9.5, length=0, pad=7)
     ax.xaxis.label.set_color(MUTED); ax.yaxis.label.set_color(MUTED); ax.title.set_color(TEXT)
     for spine in ax.spines.values(): spine.set_visible(False)
-    ax.grid(axis=axis, color=LINE, linewidth=.8, alpha=.65); ax.set_axisbelow(True)
+    ax.grid(axis=axis, color=GRID, linewidth=.8); ax.set_axisbelow(True)
 
 
 def create_figures(response, composition, estimates):
     FIGURE_DIR.mkdir(parents=True, exist_ok=True)
     age = response[response.variable.eq("age_band")].set_index("category").reindex(AGE_BANDS)
     fig, ax = plt.subplots(figsize=(9.6, 5.6)); style(ax, "x")
-    bars = ax.barh(age.index, age.response_rate*100, color=BAR, height=.6)
+    bars = ax.barh(age.index, age.response_rate*100, color=BAR, edgecolor=LINE, height=.6)
     ax.set_xlabel("Response rate (%)", labelpad=12); ax.set_title("Response rates vary by age", loc="left", pad=18, fontsize=16, fontweight=400, color=TEXT)
     for bar, value in zip(bars, age.response_rate*100): ax.text(value+.4, bar.get_y()+bar.get_height()/2, f"{value:.1f}%", va="center", color=TEXT)
     fig.tight_layout(pad=1.6); fig.savefig(FIGURE_DIR / "response_rate_by_age.png", dpi=200, facecolor=BG, bbox_inches="tight"); plt.close(fig)
     deviation = composition.groupby("variable")[["unweighted_difference_pp", "weighted_difference_pp"]].apply(lambda x: x.abs().mean())
     fig, ax = plt.subplots(figsize=(9.6, 5.6)); style(ax, "y")
     x=np.arange(len(deviation)); width=.34
-    ax.bar(x-width/2, deviation.unweighted_difference_pp, width, color=BAR, label="Unweighted")
-    ax.bar(x+width/2, deviation.weighted_difference_pp, width, color=ACCENT, label="Weighted")
+    ax.bar(x-width/2, deviation.unweighted_difference_pp, width, color=BAR, edgecolor=LINE, label="Unweighted")
+    ax.bar(x+width/2, deviation.weighted_difference_pp, width, color=ACCENT, edgecolor=LINE, label="Weighted")
     ax.set_xticks(x, [v.replace("_", " ").title() for v in deviation.index]); ax.set_ylabel("Average absolute deviation (pp)", labelpad=12)
     ax.set_title("Weighting improves population alignment", loc="left", pad=18, fontsize=16, fontweight=400, color=TEXT)
     legend=ax.legend(frameon=False); [t.set_color(MUTED) for t in legend.get_texts()]
     fig.tight_layout(pad=1.6); fig.savefig(FIGURE_DIR / "composition_deviation_before_after_weighting.png", dpi=200, facecolor=BG, bbox_inches="tight"); plt.close(fig)
     fig, ax = plt.subplots(figsize=(9.6, 5.6)); style(ax, "y")
     labels=estimates.estimate.tolist(); values=estimates.mean_service_support.tolist(); colors=[ACCENT, BAR, MUTED]
-    bars=ax.bar(labels, values, color=colors, width=.58); ax.set_ylim(min(values)-.3, max(values)+.3); ax.set_ylabel("Mean service support (0-10)", labelpad=12)
+    bars=ax.bar(labels, values, color=colors, edgecolor=LINE, width=.58); ax.set_ylim(min(values)-.3, max(values)+.3); ax.set_ylabel("Mean service support (0-10)", labelpad=12)
     ax.set_title("Weighting reduces outcome bias", loc="left", pad=18, fontsize=16, fontweight=400, color=TEXT)
     for bar,value in zip(bars,values): ax.text(bar.get_x()+bar.get_width()/2,value+.025,f"{value:.3f}",ha="center",color=TEXT)
     fig.tight_layout(pad=1.6); fig.savefig(FIGURE_DIR / "estimate_bias_before_after_weighting.png", dpi=200, facecolor=BG, bbox_inches="tight"); plt.close(fig)
