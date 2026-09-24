@@ -1,4 +1,5 @@
 from pathlib import Path
+from io import BytesIO
 import subprocess
 
 try:
@@ -16,8 +17,67 @@ POPULATION_SIZE, SAMPLE_SIZE, SEED = 50_000, 6_000, 20260812
 AGE_BANDS = ["18-24", "25-34", "35-44", "45-54", "55-64", "65-74"]
 REGIONS = ["London", "South", "Midlands", "North", "Scotland/Wales"]
 GENDERS = ["Woman", "Man", "Non-binary / other"]
-BG, TEXT, MUTED = "#000000", "#FFFFFF", "#B3B3B3"
+BG, TEXT, MUTED = "#0F0F0F", "#FFFFFF", "#B3B3B3"
 LINE, GRID, BAR, ACCENT = "#404040", "#333333", "#666666", "#FFFFFF"
+
+FIGURE_PADDING_PX = 30
+FIGURE_CORNER_RADIUS_PX = 38
+
+
+def save_rounded_figure(fig, path, dpi=200):
+    """Save a chart on a rounded #0F0F0F container with a 30 px inset."""
+    buffer = BytesIO()
+    fig.savefig(
+        buffer,
+        format="png",
+        dpi=dpi,
+        facecolor=BG,
+        bbox_inches="tight",
+        pad_inches=0,
+    )
+    buffer.seek(0)
+    image = plt.imread(buffer)
+    if image.shape[-1] == 3:
+        image = np.dstack(
+            [image, np.ones(image.shape[:2], dtype=image.dtype)]
+        )
+
+    height, width = image.shape[:2]
+    padding = FIGURE_PADDING_PX
+    background_rgb = np.array(
+        [int(BG[i : i + 2], 16) / 255 for i in (1, 3, 5)],
+        dtype=np.float32,
+    )
+    canvas = np.empty(
+        (height + 2 * padding, width + 2 * padding, 4),
+        dtype=np.float32,
+    )
+    canvas[..., :3] = background_rgb
+    canvas[..., 3] = 1.0
+    canvas[padding : padding + height, padding : padding + width] = image
+
+    canvas_height, canvas_width = canvas.shape[:2]
+    radius = min(
+        FIGURE_CORNER_RADIUS_PX,
+        canvas_height // 2,
+        canvas_width // 2,
+    )
+    y, x = np.ogrid[:canvas_height, :canvas_width]
+    edge_x = np.minimum(x, canvas_width - 1 - x)
+    edge_y = np.minimum(y, canvas_height - 1 - y)
+    corner = (edge_x < radius) & (edge_y < radius)
+    distance = np.sqrt(
+        (radius - 0.5 - edge_x) ** 2
+        + (radius - 0.5 - edge_y) ** 2
+    )
+    alpha = np.ones((canvas_height, canvas_width), dtype=np.float32)
+    alpha[corner] = np.clip(
+        radius + 0.5 - distance[corner],
+        0,
+        1,
+    )
+    canvas[..., 3] *= alpha
+    plt.imsave(path, np.clip(canvas, 0, 1))
 
 
 def run_git(*args):
@@ -174,7 +234,7 @@ def create_figures(response, composition, estimates):
     bars = ax.barh(age.index, age.response_rate*100, color=BAR, edgecolor=LINE, height=.6)
     ax.set_xlabel("Response rate (%)", labelpad=12); ax.set_title("Response rates vary by age", loc="left", pad=18, fontsize=16, fontweight=400, color=TEXT)
     for bar, value in zip(bars, age.response_rate*100): ax.text(value+.4, bar.get_y()+bar.get_height()/2, f"{value:.1f}%", va="center", color=TEXT)
-    fig.tight_layout(pad=1.6); fig.savefig(FIGURE_DIR / "response_rate_by_age.png", dpi=200, facecolor=BG, bbox_inches="tight"); plt.close(fig)
+    fig.tight_layout(pad=1.6); save_rounded_figure(fig, FIGURE_DIR / "response_rate_by_age.png", dpi=200); plt.close(fig)
     deviation = composition.groupby("variable")[["unweighted_difference_pp", "weighted_difference_pp"]].apply(lambda x: x.abs().mean())
     fig, ax = plt.subplots(figsize=(9.6, 5.6)); style(ax, "y")
     x=np.arange(len(deviation)); width=.34
@@ -183,13 +243,13 @@ def create_figures(response, composition, estimates):
     ax.set_xticks(x, [v.replace("_", " ").title() for v in deviation.index]); ax.set_ylabel("Average absolute deviation (pp)", labelpad=12)
     ax.set_title("Weighting improves population alignment", loc="left", pad=18, fontsize=16, fontweight=400, color=TEXT)
     legend=ax.legend(frameon=False); [t.set_color(MUTED) for t in legend.get_texts()]
-    fig.tight_layout(pad=1.6); fig.savefig(FIGURE_DIR / "composition_deviation_before_after_weighting.png", dpi=200, facecolor=BG, bbox_inches="tight"); plt.close(fig)
+    fig.tight_layout(pad=1.6); save_rounded_figure(fig, FIGURE_DIR / "composition_deviation_before_after_weighting.png", dpi=200); plt.close(fig)
     fig, ax = plt.subplots(figsize=(9.6, 5.6)); style(ax, "y")
     labels=estimates.estimate.tolist(); values=estimates.mean_service_support.tolist(); colors=[ACCENT, BAR, MUTED]
     bars=ax.bar(labels, values, color=colors, edgecolor=LINE, width=.58); ax.set_ylim(min(values)-.3, max(values)+.3); ax.set_ylabel("Mean service support (0-10)", labelpad=12)
     ax.set_title("Weighting reduces outcome bias", loc="left", pad=18, fontsize=16, fontweight=400, color=TEXT)
     for bar,value in zip(bars,values): ax.text(bar.get_x()+bar.get_width()/2,value+.025,f"{value:.3f}",ha="center",color=TEXT)
-    fig.tight_layout(pad=1.6); fig.savefig(FIGURE_DIR / "estimate_bias_before_after_weighting.png", dpi=200, facecolor=BG, bbox_inches="tight"); plt.close(fig)
+    fig.tight_layout(pad=1.6); save_rounded_figure(fig, FIGURE_DIR / "estimate_bias_before_after_weighting.png", dpi=200); plt.close(fig)
 
 
 def generate_report(population, respondents, estimates, response, composition, diagnostics):
